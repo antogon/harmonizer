@@ -1,32 +1,36 @@
 import argparse
 from music21 import chord, converter, stream
 
-parser=argparse.ArgumentParser(description="sample argument parser")
-parser.add_argument("numberOfSteps", type=int, help="number of semitones (+/-) to harmonize")
-parser.add_argument("outputFile", type=str, help="output file name")
-args=parser.parse_args()
+def harmonize(tinynotation_notes, number_of_steps):
+    scale = converter.parse(tinynotation_notes)
+    key = scale.analyze('key')
 
-scale = converter.parse("tinynotation: 4/4 e b e e- e- e f# e e- c# e- c# a f# f# e e- c# b b c# b")
-key = scale.analyze('key')
+    harmony_pitches = []
 
-print("Analyzed key: ", key.tonic.name, key.mode)
-print("Notes given: ", scale.pitches)
-print("Notes in scale: ", key.pitches)
+    for pitch in scale.pitches:
+        harmony_pitches.append(key.nextPitch(pitch, stepSize=number_of_steps))
 
-harmony_pitches = []
+    harmonized_line = []
 
-for pitch in scale.pitches:
-    harmony_pitches.append(key.nextPitch(pitch, stepSize=args.numberOfSteps))
+    for given_pitch, harmony_pitch in list(zip(scale.pitches, harmony_pitches)):
+        c = chord.Chord([given_pitch, harmony_pitch])
+        harmonized_line.append(c)
 
-print("Notes in harmony: ", harmony_pitches)
+    return (key, harmony_pitches, harmonized_line)
 
-harmonized_line = []
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="sample argument parser")
+    parser.add_argument("lineToHarmonize", type=str, help="notes in line to harmonize")
+    parser.add_argument("numberOfSteps", type=int, help="number of semitones (+/-) to harmonize")
+    parser.add_argument("outputFile", type=str, help="output file name")
+    args = parser.parse_args()
 
-for given_pitch, harmony_pitch in list(zip(scale.pitches, harmony_pitches)):
-    print("Given pitch: ", given_pitch, "Harmony pitch: ", harmony_pitch)
-    c = chord.Chord([given_pitch, harmony_pitch])
-    harmonized_line.append(c)
+    (key, harmony_pitches, harmonized_line) = harmonize(args.lineToHarmonize, args.numberOfSteps)
 
-output_score = stream.Score(stream.Part(stream.Measure(harmonized_line)))
-output_score.show('text')
-output_score.write('midi', args.outputFile)
+    print("Analyzed key: ", key.tonic.name, key.mode)
+    print("Notes in scale: ", key.pitches)
+    print("Notes in harmony: ", harmony_pitches)
+
+    output_score = stream.Score(stream.Part(stream.Measure(harmonized_line)))
+    output_score.show('text')
+    output_score.write('midi', args.outputFile)
