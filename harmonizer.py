@@ -1,6 +1,6 @@
 import argparse
 import re
-from music21 import chord, converter, stream, scale, pitch
+from music21 import chord, converter, stream, scale, pitch, note
 
 def parse_tablature(tablature):
     valid_tablature_regex = r'[\n\w]*([a-gA-G#]{1,2}(\|[-0-9]+)+\|?\w*\n?){4,6}'
@@ -20,19 +20,20 @@ def parse_tablature(tablature):
         return list(map(lambda note_tuple: note_tuple[1], sorted(parsed_notes, key=lambda note_tuple: note_tuple[0])))
     else:
         raise RuntimeError("Invalid tablature")
-
-def harmonize(tinynotation_notes, number_of_steps):
-    input_line = converter.parse(tinynotation_notes)
-    key = input_line.analyze('key')
+    
+def harmonize(input_line, number_of_steps):
+    notes = list(map(lambda p: note.Note(p), input_line))
+    input_score = stream.Stream(notes)
+    key = input_score.analyze('key')
 
     harmony_pitches = []
 
-    for input_pitch in input_line.pitches:
+    for input_pitch in input_line:
         harmony_pitches.append(key.nextPitch(input_pitch, stepSize=number_of_steps))
 
     harmonized_line = []
 
-    for given_pitch, harmony_pitch in list(zip(input_line.pitches, harmony_pitches)):
+    for given_pitch, harmony_pitch in list(zip(input_line, harmony_pitches)):
         c = chord.Chord([given_pitch, harmony_pitch])
         harmonized_line.append(c)
 
@@ -45,7 +46,8 @@ if __name__ == '__main__':
     parser.add_argument("outputFile", type=str, help="output file name")
     args = parser.parse_args()
 
-    (key, harmony_pitches, harmonized_line) = harmonize(args.lineToHarmonize, args.numberOfSteps)
+    input_score = converter.parse(args.lineToHarmonize)
+    (key, harmony_pitches, harmonized_line) = harmonize(list(input_score.pitches), args.numberOfSteps)
 
     print("Analyzed key: ", key.tonic.name, key.mode)
     print("Notes in scale: ", key.pitches)
