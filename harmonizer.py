@@ -40,14 +40,27 @@ def harmonize(input_line, number_of_steps):
     return (key, harmony_pitches, harmonized_line)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="sample argument parser")
-    parser.add_argument("lineToHarmonize", type=str, help="notes in line to harmonize")
+    parser = argparse.ArgumentParser(description="Harmonize a line of notes.")
+    parser.add_argument("--line", required=False, type=str, help="notes in tinynotation format of line to harmonize")
+    parser.add_argument("--file", required=False, type=str, help="name of file containing guitar tablature to harmonize")
     parser.add_argument("numberOfSteps", type=int, help="number of semitones (+/-) to harmonize")
-    parser.add_argument("outputFile", type=str, help="output file name")
+    parser.add_argument("--output", required=False, type=str, help="output file name")
     args = parser.parse_args()
+    
+    if args.line is None and args.file is None:
+        parser.error("Either --line or --file must be specified")
 
-    input_score = converter.parse(args.lineToHarmonize)
-    (key, harmony_pitches, harmonized_line) = harmonize(list(input_score.pitches), args.numberOfSteps)
+    if args.line is not None and args.file is not None:
+        parser.error("Specify either --line or --file, not both")
+
+    if args.line is not None:
+        input_score = converter.parse(args.line)
+        (key, harmony_pitches, harmonized_line) = harmonize(list(input_score.pitches), args.numberOfSteps)
+    elif args.file is not None:
+        with open(args.file) as f:
+            data = f.read()
+        input_pitches = parse_tablature(data)
+        (key, harmony_pitches, harmonized_line) = harmonize(input_pitches, args.numberOfSteps)
 
     print("Analyzed key: ", key.tonic.name, key.mode)
     print("Notes in scale: ", key.pitches)
@@ -55,4 +68,5 @@ if __name__ == '__main__':
 
     output_score = stream.Score(stream.Part(stream.Measure(harmonized_line)))
     output_score.show('text')
-    output_score.write('midi', args.outputFile)
+    if args.output is not None:
+        output_score.write('midi', args.output)
