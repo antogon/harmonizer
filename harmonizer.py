@@ -46,7 +46,7 @@ if __name__ == '__main__':
     parser.add_argument("numberOfSteps", type=int, help="number of semitones (+/-) to harmonize")
     parser.add_argument("--output", required=False, type=str, help="output file name")
     args = parser.parse_args()
-    
+
     if args.line is None and args.file is None:
         parser.error("Either --line or --file must be specified")
 
@@ -63,8 +63,8 @@ if __name__ == '__main__':
         (key, harmony_pitches, harmonized_line) = harmonize(input_pitches, args.numberOfSteps)
 
     print("Analyzed key: ", key.tonic.name, key.mode)
-    print("Notes in scale: ", key.pitches)
-    print("Notes in harmony: ", harmony_pitches)
+    print("Notes in scale: ", list(map(lambda pitch: pitch.name, key.pitches)))
+    print("Notes in harmony: ", list(map(lambda pitch: pitch.name, harmony_pitches)))
 
     output_score = stream.Score(stream.Part(stream.Measure(harmonized_line)))
     output_score.show('text')
