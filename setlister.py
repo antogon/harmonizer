@@ -30,7 +30,7 @@ def generate_possible_setlist(setlist_length, songs_ids_already_used, song_ids_t
     possible_setlist.append(song_id_to_end_with)
     return possible_setlist
 
-def check_setlist(setlist_song_ids, songs_keys_by_id, songs_beat_styles_by_id):
+def check_setlist(setlist_song_ids, songs_artists_by_id, songs_keys_by_id, songs_beat_styles_by_id):
     for ndx in range(len(setlist_song_ids) - 1):
         song_id = setlist_song_ids[ndx]
         next_song_id = setlist_song_ids[ndx + 1]
@@ -41,6 +41,8 @@ def check_setlist(setlist_song_ids, songs_keys_by_id, songs_beat_styles_by_id):
         if songs_keys_by_id[song_id] == songs_keys_by_id[next_song_id]:
             return False
         if songs_beat_styles_by_id[song_id] == songs_beat_styles_by_id[next_song_id]:
+            return False
+        if songs_artists_by_id[song_id] == songs_artists_by_id[next_song_id]:
             return False
     return True
 
@@ -54,6 +56,7 @@ if __name__ == '__main__':
     songs_by_id = {}
     songs_keys_by_id = {}
     songs_beat_styles_by_id = {}
+    songs_artists_by_id = {}
     song_ids_to_start_with = []
     song_ids_to_end_with = []
 
@@ -64,6 +67,7 @@ if __name__ == '__main__':
             songs_by_id[song_id] = row
             songs_keys_by_id[song_id] = row['key']
             songs_beat_styles_by_id[song_id] = row['beat_style']
+            songs_artists_by_id[song_id] = row['artist_name']
             song_ids_to_start_with.append(song_id) if row['start_with'] in ['true', 'True', 't', 'Yes', 'yes', 'y'] else None
             song_ids_to_end_with.append(song_id) if row['end_with'] in ['true', 'True', 't', 'Yes', 'yes', 'y'] else None
 
@@ -81,7 +85,7 @@ if __name__ == '__main__':
         setlist_length = song_count_per_setlist[setlist_ndx]
         while not is_setlist_valid:
             possible_setlist = generate_possible_setlist(setlist_length, songs_ids_already_used, song_ids_to_end_with, song_ids_to_start_with, songs_by_id)
-            is_setlist_valid = check_setlist(possible_setlist, songs_keys_by_id, songs_beat_styles_by_id)
+            is_setlist_valid = check_setlist(possible_setlist, songs_artists_by_id, songs_keys_by_id, songs_beat_styles_by_id)
         setlists.append(possible_setlist)
         songs_ids_already_used += possible_setlist
 

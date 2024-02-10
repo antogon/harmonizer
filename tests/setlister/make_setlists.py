@@ -38,7 +38,12 @@ def test_checks_setlists_happy_path():
         '2': 'Metal',
         '3': 'One Drop'
     }
-    assert check_setlist(possible_setlist, songs_keys_by_id, songs_beat_styles_by_id) == True
+    songs_artists_by_id = {
+        '1': 'Don Carlos',
+        '2': 'Don Felder',
+        '3': 'Irie Love'
+    }
+    assert check_setlist(possible_setlist, songs_artists_by_id, songs_keys_by_id, songs_beat_styles_by_id) == True
 
 def test_checks_setlists_repeating_keys():
     possible_setlist = ['1', '2', '3']
@@ -52,7 +57,12 @@ def test_checks_setlists_repeating_keys():
         '2': 'Metal',
         '3': 'One Drop'
     }
-    assert check_setlist(possible_setlist, songs_keys_by_id, songs_beat_styles_by_id) == False
+    songs_artists_by_id = {
+        '1': 'Don Carlos',
+        '2': 'Don Felder',
+        '3': 'Irie Love'
+    }
+    assert check_setlist(possible_setlist, songs_artists_by_id, songs_keys_by_id, songs_beat_styles_by_id) == False
 
 def test_checks_setlists_repeating_beats():
     possible_setlist = ['1', '2', '3']
@@ -66,4 +76,28 @@ def test_checks_setlists_repeating_beats():
         '2': 'Rockers',
         '3': 'One Drop'
     }
-    assert check_setlist(possible_setlist, songs_keys_by_id, songs_beat_styles_by_id) == False
+    songs_artists_by_id = {
+        '1': 'Don Carlos',
+        '2': 'Don Felder',
+        '3': 'Irie Love'
+    }
+    assert check_setlist(possible_setlist, songs_artists_by_id, songs_keys_by_id, songs_beat_styles_by_id) == False
+
+def test_checks_setlists_repeating_artists():
+    possible_setlist = ['1', '2', '3']
+    songs_keys_by_id = {
+        '1': 'Dm',
+        '2': 'Bm',
+        '3': 'G#'
+    }
+    songs_beat_styles_by_id = {
+        '1': 'Rockers',
+        '2': 'Metal',
+        '3': 'One Drop'
+    }
+    songs_artists_by_id = {
+        '1': 'Don Carlos',
+        '2': 'Don Carlos',
+        '3': 'Irie Love'
+    }
+    assert check_setlist(possible_setlist, songs_artists_by_id, songs_keys_by_id, songs_beat_styles_by_id) == False
